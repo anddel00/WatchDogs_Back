@@ -9,23 +9,27 @@ import java.util.Spliterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+/*Controller REST che gestisce chiamata API quando viene inserita una chiave di ricerca.
+La ricerca avviene in base al nome dell'evento, all'organizzatore e al luogo.
+ */
+
 @RestController
 public class ResponseController {
 
     @Autowired
-    private IEventService eventService;
+    private IEventService eventService; //Il controller lato back-end comunica con i Service
 
     public ResponseController() {
 
     }
 
-    @RequestMapping(value = "/suggestion", method = RequestMethod.GET)
+    //Metodo per gestire le richieste HTTP GET all'endpoint "/search"
+    @RequestMapping(value = "/search", method = RequestMethod.GET)
     public Iterable<Event> MakeResponse(@RequestParam String word) {
 
-        Iterable<Event> response = eventService.getByword(word); //avvio la ricerca della parola nel database, la ricerca si basa sui campi nome dell'evento, organizzatore oppure luogo
+        Iterable<Event> response = eventService.getByword(word);
 
-        //La ricerca restituisce oggetti JSON corrispondenti alle descrizioni delle istanze della tabella event che hanno matchato con word.
 
-        return response;
+        return response; //La ricerca restituisce al front le istanze della tabella event che hanno matchato con word.
     }
 }

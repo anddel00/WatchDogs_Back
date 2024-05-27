@@ -11,55 +11,38 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+/*
+    Controller REST che legge gli input dell'utente ad ogni digitazione.
+    Effettua ricerche nel DB sui campi nome evento, organizzatore e luogo
+    e restituisce le singole parole che matchano con la digitazione effettuata.
+*/
 
 @RestController
 public class SuggestionController {
 
     @Autowired
-    private IEventService eventService;
+    private IEventService eventService; //Il controller lato back-end comunica con i Service
 
     public SuggestionController(){
 
     }
 
-    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    @RequestMapping(value = "/suggestion", method = RequestMethod.GET)
     public Iterable<String> MakeSuggestions(@RequestParam String word) {
 
-        Iterable<Event> response = eventService.getByword(word); //avvio la ricerca della parola nel database, la ricerca si basa sui campi nome dell'evento, organizzatore oppure luogo
+        Iterable<Event> response = eventService.getByword(word); //avvio la ricerca in base alle lettere che arrivano dal front
 
-        //La ricerca restituisce oggetti JSON corrispondenti alle descrizioni delle istanze della tabella event che hanno matchato con word.
-        //Voglio suggerire il nome, l'organizzatore o il luogo che l'utente stava cercando con la digitazione
+        // Combina i suggerimenti in un unico stream applicando i filtri
+        List<String> matchingSuggestions = StreamSupport.stream(response.spliterator(), false) //conversione di response in uno Stream<Event>
+                .flatMap(event -> Stream.of(event.getEventname(), event.getOrganizzatore(), event.getLuogo())) //per ogni Event nello stream, si crea 1 stream con 3 attributi: nome evento, organizzatore e luogo.
+                .filter(Objects::nonNull) // Filtra i campi null
+                .filter(suggestion -> suggestion.toLowerCase().contains(word.toLowerCase())) // Filtra i suggerimenti che contengono la parola cercata
+                .distinct() // Elimina i duplicati
+                .collect(Collectors.toList()); //gli stream uniti da flatMap vengono raccolti in un'unica lista.
 
-        Iterable<String> suggestion_eventname = StreamSupport.stream(response.spliterator(), false).map(Event::getEventname).collect(Collectors.toList()); //Lista dei nomi che hanno matchato
-        Iterable<String> suggestion_organizer = StreamSupport.stream(response.spliterator(), false).map(Event::getOrganizzatore).collect(Collectors.toList()); //Lista degli organizzatori
-        Iterable<String> suggestion_place = StreamSupport.stream(response.spliterator(), false).map(Event::getLuogo).collect(Collectors.toList()); //Lista dei luoghi
-
-        //Se restituissi una concatenazione delle 3 liste, per ogni ricerca, sarebbe suggerito il campo che si stava cercando, e in più gli altri due campi corrispondenti, che non si stavano cercando.
-        //Realizzo quindi delle ricerche negli Iterable e mostro solo i suggerimenti che effettivamente contengono la parola cercata, non gli altri campi associati ad essa
-
-        List<String> matchingSuggestions = new ArrayList<>();
-
-        for (String suggestion : suggestion_eventname) {
-            if (suggestion.toLowerCase().contains(word.toLowerCase())) {
-                matchingSuggestions.add(suggestion);
-            }
-        }
-
-        for (String suggestion : suggestion_organizer) {
-            if (suggestion.toLowerCase().contains(word.toLowerCase())) {
-                matchingSuggestions.add(suggestion);
-            }
-        }
-
-        for (String suggestion : suggestion_place) {
-            if (suggestion.toLowerCase().contains(word.toLowerCase())) {
-                matchingSuggestions.add(suggestion);
-            }
-        }
-
-        List<String> uniqueMatchingSuggestions = new ArrayList<>(new HashSet<>(matchingSuggestions));
-
-        return uniqueMatchingSuggestions;
+        return matchingSuggestions;
     }
 }

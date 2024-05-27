@@ -1,5 +1,7 @@
 package com.watchdogs.eventnetwork.service;
 
+//Interfaccia per la definizione dei metodi invocabili dai controller, implementate tramite Repository.
+
 import com.watchdogs.eventnetwork.model.Event;
 import org.springframework.stereotype.Service;
 

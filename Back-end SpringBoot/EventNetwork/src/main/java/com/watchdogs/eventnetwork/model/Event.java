@@ -3,6 +3,8 @@ package com.watchdogs.eventnetwork.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
+//Mappatura tabella del DB
+
 @Entity //facciamo capire a Spring che questa classe vuole essere una rappresentazione di una tabella
 public class Event {
 
