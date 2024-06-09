@@ -1,0 +1,7 @@
+LINK
+
+Trello Back-end: https://trello.com/b/nZ6kNHWR/back-end
+Trello Front-end: https://trello.com/b/XH68wLc4/front-end
+
+GitHub back: https://github.com/anddel00/WatchDogs_Back
+GitHub front: https://github.com/anddel00/WatchDogs_Front
